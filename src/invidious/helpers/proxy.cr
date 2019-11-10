@@ -94,15 +94,32 @@ class HTTPClient < HTTP::Client
   def exec(request)
     if self.host == "www.youtube.com"
       request.headers["x-youtube-client-name"] ||= "1"
-      request.headers["x-youtube-client-version"] ||= "1.20180719"
+      request.headers["x-youtube-client-version"] ||= "1.20191108.05.00"
       request.headers["user-agent"] ||= random_user_agent
       request.headers["accept-charset"] ||= "ISO-8859-1,utf-8;q=0.7,*;q=0.7"
       request.headers["accept"] ||= "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
       request.headers["accept-language"] ||= "en-us,en;q=0.5"
-      request.headers["cookie"] = "#{(CONFIG.cookies.map { |c| "#{c.name}=#{c.value}" }).join("; ")}; #{request.headers["cookie"]?}"
-    end
 
-    super
+      if request.headers["cookie"]?
+        request.headers["cookie"] = "#{request.headers["cookie"]}; #{(CONFIG.cookies.map { |c| "#{c.name}=#{c.value}" }).join("; ")}"
+      else
+        request.headers["cookie"] = (CONFIG.cookies.map { |c| "#{c.name}=#{c.value}" }).join("; ")
+      end
+
+      if request.method != "POST"
+        response = HTTP::Client::Response.new(500)
+        convert = Process.run(%(./http_client -s www.youtube.com -p '#{request.resource}' -M #{request.method} -o version=Q046),
+          shell: true, output: Process::Redirect::Pipe) do |proc|
+          response = HTTP::Client::Response.from_io(proc.output)
+        end
+
+        response
+      else
+        super
+      end
+    else
+      super
+    end
   end
 end
 
