@@ -1,5 +1,7 @@
 # Invidious
 
+**This should be considered a PoC. lsquic is licensed under the MIT. Source is available [here](https://github.com/litespeedtech/lsquic).**
+
 [![Build Status](https://travis-ci.org/omarroth/invidious.svg?branch=master)](https://travis-ci.org/omarroth/invidious)
 
 ## Invidious is an alternative front-end to YouTube

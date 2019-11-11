@@ -108,7 +108,7 @@ class HTTPClient < HTTP::Client
 
       if request.method != "POST"
         response = HTTP::Client::Response.new(500)
-        convert = Process.run(%(./http_client -s www.youtube.com -p '#{request.resource}' -M #{request.method} -o version=Q046),
+        convert = Process.run(%(./lsquic -s www.youtube.com -p '#{request.resource}' -M #{request.method} -o version=Q046),
           shell: true, output: Process::Redirect::Pipe) do |proc|
           response = HTTP::Client::Response.from_io(proc.output)
         end
