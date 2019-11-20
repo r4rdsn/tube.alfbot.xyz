@@ -7,5 +7,11 @@ db:
   port: 5432
   dbname: invidious
 full_refresh: false
-https_only: false
-domain:
+https_only: true
+domain: tube.alfbot.xyz
+top_enabled: false
+default_user_preferences:
+    continue_autoplay: false
+    dark_mode: true
+    default_home: "Popular"
+    feed_menu: ["Subscriptions", "Playlists", "Popular", "Trending"]
