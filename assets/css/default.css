@@ -470,6 +470,10 @@ video.video-js {
   margin-left: -1.5em;
 }
 
+.pure-menu-heading {
+  text-transform: lowercase;
+}
+
 .icon.ion-ios-thumbs-up {
   color: green;
 }
