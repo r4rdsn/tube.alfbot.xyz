@@ -1,37 +1,59 @@
 a:hover,
 a:active {
-  color: rgb(0, 182, 240);
+  color: rgb(255, 255, 255);
 }
 
 a {
-  color: #a0a0a0;
+  color: #888;
   text-decoration: none;
 }
 
 body {
-  background-color: rgba(35, 35, 35, 1);
-  color: #f0f0f0;
+  background-color: rgba(0, 0, 0, 1);
+  color: #fff;
 }
 
 .pure-form legend {
-  color: #f0f0f0;
+  color: #fff;
 }
 
 .pure-menu-heading {
-  color: #f0f0f0;
+  color: #fff;
 }
 
 input,
 select,
 textarea {
-  color: rgba(35, 35, 35, 1);
+  color: rgba(0, 0, 0, 1);
 }
 
 .pure-form input[type="file"] {
-  color: #f0f0f0;
+  color: #fff;
 }
 
 .navbar > .searchbar input {
   background-color: inherit;
   color: inherit;
+}
+
+button.pure-button-primary,
+a.pure-button-primary,
+.channel-owner:hover {
+  background-color: rgba(0, 0, 0, 1);
+  color: #fff;
+  border: 1px solid white;
+}
+
+button.pure-button-primary:hover,
+a.pure-button-primary:hover {
+  background-color: #fff;
+  color: rgb(0, 0, 0, 1);
+}
+
+.navbar > .searchbar .pure-form input[type="search"] {
+  border-bottom: 1px solid #fff;
+}
+
+.video-js {
+  border: 1px solid #fff;
 }
