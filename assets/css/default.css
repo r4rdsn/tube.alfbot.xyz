@@ -469,3 +469,11 @@ video.video-js {
   margin-top: -0.81666em;
   margin-left: -1.5em;
 }
+
+.icon.ion-ios-thumbs-up {
+  color: green;
+}
+
+.icon.ion-ios-thumbs-down {
+  color: red;
+}
