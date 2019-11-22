@@ -367,18 +367,12 @@ def template_youtube_comments(comments, locale, thin_mode)
       if comments["videoId"]?
         html << <<-END_HTML
           <a href="https://www.youtube.com/watch?v=#{comments["videoId"]}&lc=#{child["commentId"]}" title="#{translate(locale, "YouTube comment permalink")}">[YT]</a>
-          |
         END_HTML
       elsif comments["authorId"]?
         html << <<-END_HTML
           <a href="https://www.youtube.com/channel/#{comments["authorId"]}/community?lb=#{child["commentId"]}" title="#{translate(locale, "YouTube comment permalink")}">[YT]</a>
-          |
         END_HTML
       end
-
-      html << <<-END_HTML
-        <i class="icon ion-ios-thumbs-up"></i> #{number_with_separator(child["likeCount"])}
-      END_HTML
 
       if child["creatorHeart"]?
         if !thin_mode
