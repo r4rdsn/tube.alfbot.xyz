@@ -127,8 +127,6 @@ def subscribe_to_feeds(db, logger, key, config)
     end
     max_channel = Channel(Int32).new
 
-    client_pool = HTTPPool.new(PUBSUB_URL, capacity: max_threads, timeout: 0.05)
-
     spawn do
       max_threads = max_channel.receive
       active_threads = 0
@@ -149,7 +147,7 @@ def subscribe_to_feeds(db, logger, key, config)
 
             spawn do
               begin
-                response = subscribe_pubsub(ucid, key, config, client_pool)
+                response = subscribe_pubsub(ucid, key, config)
 
                 if response.status_code >= 400
                   logger.puts("#{ucid} : #{response.body}")
@@ -263,7 +261,7 @@ def bypass_captcha(captcha_key, logger)
             # "proxyPort"     => CONFIG.proxy_port,
             # "proxyLogin"    => CONFIG.proxy_user,
             # "proxyPassword" => CONFIG.proxy_pass,
-            # "userAgent"     => random_user_agent,
+            # "userAgent"     => "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36",
           },
         }.to_json).body)
 
@@ -292,6 +290,60 @@ def bypass_captcha(captcha_key, logger)
         response = YT_POOL.client &.post("/das_captcha", headers, form: inputs)
 
         yield response.cookies.select { |cookie| cookie.name != "PREF" }
+      elsif response.headers["Location"]?.try &.includes?("/sorry/index")
+        location = response.headers["Location"].try { |u| URI.parse(u) }
+        client = QUIC::Client.new(location.host.not_nil!)
+        response = client.get(location.full_path)
+
+        html = XML.parse_html(response.body)
+        form = html.xpath_node(%(//form[@action="index"])).not_nil!
+        site_key = form.xpath_node(%(.//div[@class="g-recaptcha"])).try &.["data-sitekey"]
+
+        inputs = {} of String => String
+        form.xpath_nodes(%(.//input[@name])).map do |node|
+          inputs[node["name"]] = node["value"]
+        end
+
+        response = JSON.parse(HTTP::Client.post("https://api.anti-captcha.com/createTask", body: {
+          "clientKey" => CONFIG.captcha_key,
+          "task"      => {
+            "type"       => "NoCaptchaTaskProxyless",
+            "websiteURL" => location.to_s,
+            "websiteKey" => site_key,
+          },
+        }.to_json).body)
+
+        if response["error"]?
+          raise response["error"].as_s
+        end
+
+        task_id = response["taskId"].as_i
+
+        loop do
+          sleep 10.seconds
+
+          response = JSON.parse(HTTP::Client.post("https://api.anti-captcha.com/getTaskResult", body: {
+            "clientKey" => CONFIG.captcha_key,
+            "taskId"    => task_id,
+          }.to_json).body)
+
+          if response["status"]?.try &.== "ready"
+            break
+          elsif response["errorId"]?.try &.as_i != 0
+            raise response["errorDescription"].as_s
+          end
+        end
+
+        inputs["g-recaptcha-response"] = response["solution"]["gRecaptchaResponse"].as_s
+        client.close
+        client = QUIC::Client.new("www.google.com")
+        response = client.post(location.full_path, form: inputs)
+        headers = HTTP::Headers{
+          "Cookie" => URI.parse(response.headers["location"]).query_params["google_abuse"].split(";")[0],
+        }
+        cookies = HTTP::Cookies.from_headers(headers)
+
+        yield cookies
       end
     rescue ex
       logger.puts("Exception: #{ex.message}")
